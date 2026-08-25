@@ -1,15 +1,17 @@
 import * as Notifications from 'expo-notifications';
+import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 import type { Reminder } from '../models/Reminder';
 import { playAudioUri } from './audioService';
 import { getUpcomingReminderDates } from '../utils/reminderTime';
 
 const MAX_NOTIFICATIONS_PER_REMINDER = 48;
-const DEFAULT_CHANNEL_ID = 'azkar-reminders-v2';
+const DEFAULT_CHANNEL_ID = 'azkar-reminders-custom-sound-v1';
+const NOTIFICATION_SOUND = 'azkar_reminder.ogg';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
-    shouldPlaySound: true,
+    shouldPlaySound: false,
     shouldSetBadge: false,
     shouldShowBanner: true,
     shouldShowList: true,
@@ -17,7 +19,12 @@ Notifications.setNotificationHandler({
 });
 
 export async function requestNotificationPermission() {
-  await configureNotificationChannel();
+  try {
+    await configureNotificationChannel();
+  } catch (error) {
+    console.warn('Unable to configure notification channel.', error);
+  }
+
   const current = await Notifications.getPermissionsAsync();
   if (current.granted) {
     return true;
@@ -35,6 +42,7 @@ export async function configureNotificationChannel() {
   await Notifications.setNotificationChannelAsync(DEFAULT_CHANNEL_ID, {
     name: 'Azkar reminders',
     importance: Notifications.AndroidImportance.MAX,
+    sound: getNotificationChannelSound(),
     vibrationPattern: [0, 250, 250, 250],
     lockscreenVisibility: Notifications.AndroidNotificationVisibility.PUBLIC,
   });
@@ -62,7 +70,7 @@ export async function scheduleReminderNotifications(reminder: Reminder) {
           data: {
             audioUri: reminder.audioUri ?? '',
           },
-          sound: true,
+          sound: getNotificationContentSound(),
         },
         trigger: {
           type: Notifications.SchedulableTriggerInputTypes.DATE,
@@ -116,7 +124,7 @@ export async function sendTestNotification() {
     content: {
       title: 'Azkar reminder test',
       body: 'This reminder was scheduled 5 seconds ago.',
-      sound: true,
+      sound: getNotificationContentSound(),
     },
     trigger: {
       type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
@@ -159,4 +167,16 @@ export function listenForReminderAudioPlayback() {
 
 function isAlarmLimitError(error: unknown) {
   return error instanceof Error && error.message.toLowerCase().includes('maximum limit of concurrent alarms');
+}
+
+function getNotificationChannelSound() {
+  return isExpoGo() ? undefined : NOTIFICATION_SOUND;
+}
+
+function getNotificationContentSound() {
+  return isExpoGo() ? true : NOTIFICATION_SOUND;
+}
+
+function isExpoGo() {
+  return Constants.executionEnvironment === 'storeClient' && Constants.expoVersion !== null;
 }

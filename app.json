@@ -4,7 +4,7 @@
     "slug": "AzkarAppNew",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/logo-app.png",
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": true
@@ -20,17 +20,30 @@
       ],
       "adaptiveIcon": {
         "backgroundColor": "#FDE7EF",
-        "foregroundImage": "./assets/android-icon-foreground.png",
+        "foregroundImage": "./assets/logo-app.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/logo-app.png"
+    },
+    "splash": {
+      "image": "./assets/logo-splash.png",
+      "imageWidth": 180,
+      "resizeMode": "contain",
+      "backgroundColor": "#FDE7EF"
     },
     "plugins": [
-      "expo-notifications",
+      [
+        "expo-notifications",
+        {
+          "sounds": [
+            "./assets/sounds/azkar_reminder.ogg"
+          ]
+        }
+      ],
       [
         "expo-audio",
         {
